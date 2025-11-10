@@ -65,7 +65,12 @@ def create_source_file(db: Session, project_id: str, filename: str, storage_path
 
 
 def get_source_file(db: Session, file_id: str) -> Optional[models.SourceFile]:
-    return db.query(models.SourceFile).filter(models.SourceFile.file_id == file_id).first()
+    return (
+        db.query(models.SourceFile)
+        .filter(models.SourceFile.file_id == file_id)
+        .options(selectinload(models.SourceFile.project))
+        .first()
+    )
 
 
 def delete_source_file(db: Session, source_file: models.SourceFile) -> None:

@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     azure_ai_search_api_key: Optional[str] = None
     azure_document_intelligence_endpoint: Optional[str] = None
     azure_document_intelligence_api_key: Optional[str] = None
+    azure_openai_endpoint: Optional[str] = None
+    azure_openai_api_key: Optional[str] = None
+    azure_openai_api_version: str = "2024-05-01-preview"
+    azure_openai_embedding_deployment: Optional[str] = None
+    azure_openai_embedding_dimensions: int = 1536
     database_url: str = "sqlite:///" + str(BASE_DIR / "project_db.sqlite")
     storage_dir: Path = BASE_DIR / "storage"
 

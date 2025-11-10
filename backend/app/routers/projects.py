@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import List
 
@@ -7,9 +8,11 @@ from sqlalchemy.orm import Session
 from .. import crud, schemas
 from ..config import settings
 from ..database import get_session
+from ..create_index import SearchIndexError, get_search_service
 from ..workers import process_file
 
 router = APIRouter(prefix="/projects", tags=["projects"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("", response_model=List[schemas.ProjectBase])
@@ -20,7 +23,14 @@ def list_projects(db: Session = Depends(get_session)):
 @router.post("", response_model=schemas.ProjectBase, status_code=status.HTTP_201_CREATED)
 def create_project(payload: schemas.ProjectCreate, db: Session = Depends(get_session)):
     name = (payload.project_name or "Untitled Project").strip() or "Untitled Project"
-    return crud.create_project(db, name)
+    project = crud.create_project(db, name)
+    search_service = get_search_service()
+    if search_service:
+        try:
+            search_service.ensure_index(project.index_name)
+        except SearchIndexError as exc:
+            logger.warning("Failed to ensure index %s: %s", project.index_name, exc)
+    return project
 
 
 @router.get("/{project_id}", response_model=schemas.ProjectDetail)
@@ -45,7 +55,14 @@ def delete_project(project_id: str, db: Session = Depends(get_session)):
     project = crud.get_project(db, project_id)
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")
+    index_name = project.index_name
     crud.delete_project(db, project)
+    search_service = get_search_service()
+    if search_service:
+        try:
+            search_service.delete_index(index_name)
+        except SearchIndexError as exc:
+            logger.warning("Failed to delete index %s: %s", index_name, exc)
 
 
 @router.post("/{project_id}/files", response_model=schemas.FileUploadResponse, status_code=status.HTTP_202_ACCEPTED)

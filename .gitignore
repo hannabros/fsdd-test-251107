@@ -1,2 +1,13 @@
 frontend/node_modules/*
 .venv/*
+
+# Python
+__pycache__/
+*.pyc
+
+# Database
+# 로컬 데이터베이스 파일은 커밋하지 않는 것이 좋습니다.
+project_db.sqlite
+
+# macOS
+.DS_Store

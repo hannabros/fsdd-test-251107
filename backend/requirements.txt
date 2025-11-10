@@ -4,3 +4,6 @@ SQLAlchemy==2.0.23
 pydantic==2.8.2
 pydantic-settings==2.4.0
 python-multipart==0.0.9
+azure-ai-documentintelligence==1.0.0b4
+azure-search-documents==11.6.0
+openai==1.45.0
