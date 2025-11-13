@@ -8,10 +8,30 @@ from sqlalchemy.orm import Session, selectinload
 from . import models
 
 
+def _project_name_exists(db: Session, name: str, exclude_project_id: Optional[str] = None) -> bool:
+    query = db.query(models.Project.project_id).filter(models.Project.project_name == name)
+    if exclude_project_id:
+        query = query.filter(models.Project.project_id != exclude_project_id)
+    return query.first() is not None
+
+
+def generate_unique_project_name(
+    db: Session, desired_name: str, exclude_project_id: Optional[str] = None
+) -> str:
+    base_name = desired_name or "Untitled Project"
+    candidate = base_name
+    counter = 1
+    while _project_name_exists(db, candidate, exclude_project_id):
+        candidate = f"{base_name} ({counter})"
+        counter += 1
+    return candidate
+
+
 def create_project(db: Session, name: str) -> models.Project:
+    unique_name = generate_unique_project_name(db, name)
     project = models.Project(
         project_id=str(uuid4()),
-        project_name=name,
+        project_name=unique_name,
         index_name=f"idx-{uuid4().hex[:8]}",
         last_modified=datetime.utcnow(),
     )
@@ -35,7 +55,8 @@ def get_project(db: Session, project_id: str) -> Optional[models.Project]:
 
 
 def update_project_name(db: Session, project: models.Project, name: str) -> models.Project:
-    project.project_name = name
+    unique_name = generate_unique_project_name(db, name, exclude_project_id=project.project_id)
+    project.project_name = unique_name
     project.last_modified = datetime.utcnow()
     db.commit()
     db.refresh(project)

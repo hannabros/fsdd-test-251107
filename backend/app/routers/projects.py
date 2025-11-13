@@ -69,7 +69,7 @@ def delete_project(project_id: str, db: Session = Depends(get_session)):
 async def upload_file(
     project_id: str,
     background_tasks: BackgroundTasks,
-    upload: UploadFile = File(...),
+    file: UploadFile = File(...),
     db: Session = Depends(get_session),
 ):
     project = crud.get_project(db, project_id)
@@ -78,11 +78,11 @@ async def upload_file(
 
     project_dir = Path(settings.storage_dir) / project_id
     project_dir.mkdir(parents=True, exist_ok=True)
-    destination = project_dir / upload.filename
+    destination = project_dir / file.filename
 
-    data = await upload.read()
+    data = await file.read()
     destination.write_bytes(data)
 
-    source_file = crud.create_source_file(db, project_id, upload.filename, str(destination))
+    source_file = crud.create_source_file(db, project_id, file.filename, str(destination))
     background_tasks.add_task(process_file, source_file.file_id)
     return schemas.FileUploadResponse(file_id=source_file.file_id, status=source_file.status)

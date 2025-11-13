@@ -1,18 +1,35 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import WorkspaceHeader from "./components/WorkspaceHeader.jsx";
 import FilePanel from "./components/FilePanel.jsx";
 import ProjectsModal from "./components/ProjectsModal.jsx";
 import { api } from "./lib/api.js";
 
 const FALLBACK_NAME = "Untitled Project";
+const POLL_INTERVAL_MS = 3000;
+
+function orderProjects(list, preferredId) {
+  const copy = Array.isArray(list) ? [...list] : [];
+  if (!preferredId) {
+    return copy;
+  }
+  const index = copy.findIndex((project) => project.project_id === preferredId);
+  if (index <= 0) {
+    return copy;
+  }
+  const [preferred] = copy.splice(index, 1);
+  return [preferred, ...copy];
+}
 
 export default function App() {
   const [projects, setProjects] = useState([]);
   const [activeProject, setActiveProject] = useState(null);
+  const [activeProjectId, setActiveProjectId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState("");
+  const [isPolling, setIsPolling] = useState(false);
+  const pollRef = useRef(null);
 
   useEffect(() => {
     bootstrap();
@@ -24,14 +41,19 @@ export default function App() {
 
     try {
       let projectList = await api.listProjects();
+      let preferredId = targetProjectId;
       if (projectList.length === 0) {
         const created = await api.createProject({ project_name: FALLBACK_NAME });
-        projectList = [created];
+        preferredId = created.project_id;
+        projectList = await api.listProjects();
       }
-      setProjects(projectList);
-      const nextProjectId = targetProjectId ?? projectList[0]?.project_id;
+      const nextProjectId = preferredId ?? projectList[0]?.project_id;
+      setProjects(orderProjects(projectList, nextProjectId));
       if (nextProjectId) {
         await focusProject(nextProjectId);
+      } else {
+        setActiveProject(null);
+        setActiveProjectId(null);
       }
     } catch (err) {
       setError(err.message);
@@ -40,15 +62,16 @@ export default function App() {
     }
   }
 
-  async function focusProject(projectId) {
+  const focusProject = useCallback(async (projectId) => {
     if (!projectId) return;
     try {
       const project = await api.getProject(projectId);
       setActiveProject(project);
+      setActiveProjectId(project.project_id);
     } catch (err) {
       setError(err.message);
     }
-  }
+  }, []);
 
   async function handleProjectRename(name) {
     if (!activeProject) return;
@@ -57,18 +80,10 @@ export default function App() {
       return;
     }
 
-    setActiveProject({ ...activeProject, project_name: trimmed });
-    setProjects((prev) =>
-      prev.map((project) =>
-        project.project_id === activeProject.project_id
-          ? { ...project, project_name: trimmed }
-          : project,
-      ),
-    );
-
     try {
       setIsMutating(true);
       await api.updateProjectName(activeProject.project_id, trimmed);
+      await bootstrap(activeProject.project_id);
     } catch (err) {
       setError(err.message);
       await focusProject(activeProject.project_id);
@@ -82,8 +97,7 @@ export default function App() {
     try {
       setIsMutating(true);
       const project = await api.createProject({ project_name: name || FALLBACK_NAME });
-      setProjects((prev) => [project, ...prev]);
-      await focusProject(project.project_id);
+      await bootstrap(project.project_id);
       setModalOpen(false);
     } catch (err) {
       setError(err.message);
@@ -94,6 +108,7 @@ export default function App() {
 
   async function handleSelectProject(projectId) {
     await focusProject(projectId);
+    setProjects((prev) => orderProjects(prev, projectId));
     setModalOpen(false);
   }
 
@@ -102,17 +117,9 @@ export default function App() {
     try {
       setIsMutating(true);
       await api.deleteProject(projectId);
-      const remaining = projects.filter((project) => project.project_id !== projectId);
-      setProjects(remaining);
-
-      if (activeProject?.project_id === projectId) {
-        const fallback = remaining[0];
-        if (fallback) {
-          await focusProject(fallback.project_id);
-        } else {
-          setActiveProject(null);
-        }
-      }
+      const remainingAfterDelete = projects.filter((project) => project.project_id !== projectId);
+      const fallbackId = remainingAfterDelete[0]?.project_id;
+      await bootstrap(fallbackId);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -153,6 +160,45 @@ export default function App() {
   }
 
   const files = activeProject?.files ?? [];
+
+  useEffect(() => {
+    if (!activeProjectId) {
+      return;
+    }
+    setProjects((prev) => orderProjects(prev, activeProjectId));
+  }, [activeProjectId]);
+
+  useEffect(() => {
+    if (!activeProject) {
+      setIsPolling(false);
+      return;
+    }
+    const hasInFlight = (activeProject.files ?? []).some((file) =>
+      ["PENDING", "PROCESSING"].includes(file.status?.toUpperCase()),
+    );
+    setIsPolling(hasInFlight);
+  }, [activeProject]);
+
+  useEffect(() => {
+    if (!isPolling || !activeProject?.project_id) {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+      return;
+    }
+
+    pollRef.current = setInterval(() => {
+      focusProject(activeProject.project_id);
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    };
+  }, [isPolling, activeProject?.project_id, focusProject]);
 
   return (
     <div className="app-shell">
@@ -196,7 +242,7 @@ export default function App() {
       <ProjectsModal
         open={modalOpen}
         projects={projects}
-        activeProjectId={activeProject?.project_id}
+        activeProjectId={activeProjectId}
         onSelect={handleSelectProject}
         onCreate={handleCreateProject}
         onDelete={handleDeleteProject}

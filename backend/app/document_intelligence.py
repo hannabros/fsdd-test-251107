@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
 from azure.ai.documentintelligence import DocumentIntelligenceClient
-from azure.ai.documentintelligence.models import AnalyzeDocumentRequest, DocumentContentFormat
+from azure.ai.documentintelligence.models import DocumentContentFormat
 from azure.core.credentials import AzureKeyCredential
 from azure.core.exceptions import AzureError
 
@@ -58,7 +58,8 @@ class DocumentIntelligenceService:
         try:
             poller = self._client.begin_analyze_document(
                 model_id="prebuilt-layout",
-                analyze_request=AnalyzeDocumentRequest(bytes_source=file_bytes),
+                body=file_bytes,
+                content_type="application/pdf",
                 output_content_format=DocumentContentFormat.MARKDOWN,
             )
             result = poller.result()

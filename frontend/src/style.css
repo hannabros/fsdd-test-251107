@@ -358,6 +358,18 @@ button.icon {
   font-size: 1.05rem;
 }
 
+.project-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.25rem;
+}
+
+.code-text {
+  font-family: "JetBrains Mono", "Fira Mono", "SFMono-Regular", ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+
 .project-card small {
   color: #475569;
 }

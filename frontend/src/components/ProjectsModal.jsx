@@ -56,7 +56,10 @@ export default function ProjectsModal({
                   >
                     <div>
                       <h3>{project.project_name}</h3>
-                      <p className="muted">{project.index_name}</p>
+                      <div className="project-meta">
+                        <span className="muted code-text">ID · {project.project_id}</span>
+                        <span className="muted code-text">Index · {project.index_name}</span>
+                      </div>
                     </div>
                     <small>{formatRelativeTime(lastTouched)}</small>
                   </button>

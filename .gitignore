@@ -8,6 +8,10 @@ __pycache__/
 # Database
 # 로컬 데이터베이스 파일은 커밋하지 않는 것이 좋습니다.
 project_db.sqlite
+backend/storage/*
 
 # macOS
 .DS_Store
+
+# API_KEY
+.env

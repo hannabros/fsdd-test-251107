@@ -10,7 +10,7 @@ from azure.core.exceptions import AzureError, ResourceNotFoundError
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient
 from azure.search.documents.indexes.models import (
-    HnswVectorSearchAlgorithmConfiguration,
+    HnswAlgorithmConfiguration,
     SearchField,
     SearchFieldDataType,
     SearchIndex,
@@ -96,7 +96,7 @@ class AzureSearchService:
                 )
             ],
             algorithms=[
-                HnswVectorSearchAlgorithmConfiguration(
+                HnswAlgorithmConfiguration(
                     name=VECTOR_ALGORITHM_NAME,
                     metric="cosine",
                 )
@@ -145,28 +145,24 @@ class AzureSearchService:
             return
 
         filter_value = self._escape_filter_value(file_id)
-        continuation: Optional[str] = None
-        total_deleted = 0
-
-        while True:
+        
+        try:
             results = client.search(
                 search_text="*",
                 filter=f"source_file_id eq '{filter_value}'",
                 select=["id"],
                 top=1000,
                 include_total_count=False,
-                continuation_token=continuation,
             )
-            batch = [{"id": doc["id"]} for doc in results]
+            
+            # Convert results to list to avoid pagination issues
+            batch = [{"id": doc["id"]} for doc in list(results)]
+            
             if batch:
                 client.delete_documents(documents=batch)
-                total_deleted += len(batch)
-            continuation = results.get_continuation_token()
-            if not continuation:
-                break
-
-        if total_deleted:
-            logger.info("Deleted %s chunk(s) for file %s in index %s", total_deleted, file_id, index_name)
+                logger.info("Deleted %s chunk(s) for file %s in index %s", len(batch), file_id, index_name)
+        except AzureError as exc:
+            raise SearchIndexError(f"Failed to delete chunks for file {file_id}") from exc
 
     def delete_index(self, index_name: str) -> None:
         try:
