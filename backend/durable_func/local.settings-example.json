@@ -1,0 +1,21 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "DURABLE_TASK_SCHEDULER_CONNECTION_STRING": "Endpoint=http://localhost:8080;Authentication=None",
+    "TASKHUB_NAME": "default",
+    "AZURE_OPENAI_ENDPOINT": "your-openai-endpoint",
+    "AZURE_OPENAI_API_KEY": "your-openai-api-key",
+    "MODEL_DEPLOYMENT_NAME": "gpt-4.1-mini",
+    "AZURE_AI_SEARCH_ENDPOINT": "your-azure-ai-search-endpoint",
+    "AZURE_AI_SEARCH_API_KEY": "your-azure-ai-search-api-key",
+    "AZURE_AI_SEARCH_INDEX_NAME": "doc_inquiry_index",
+    "AZURE_AI_SEARCH_SEARCH_TYPE": "semantic",
+    "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME": "text-embedding-3-small",
+    "AZURE_OPENAI_API_VERSION": "2024-08-01-preview"
+  },
+  "Host": {
+    "CORS": "*"
+  }
+}

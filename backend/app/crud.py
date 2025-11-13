@@ -97,3 +97,30 @@ def get_source_file(db: Session, file_id: str) -> Optional[models.SourceFile]:
 def delete_source_file(db: Session, source_file: models.SourceFile) -> None:
     db.delete(source_file)
     db.commit()
+
+
+def create_agent_run(
+    db: Session,
+    run_id: str,
+    status_url: str,
+    send_event_url: str,
+    query: str,
+    report_length: str,
+    project_id: Optional[str],
+) -> models.AgentRun:
+    agent_run = models.AgentRun(
+        run_id=run_id,
+        status_url=status_url,
+        send_event_url=send_event_url,
+        query=query,
+        report_length=report_length,
+        project_id=project_id,
+    )
+    db.add(agent_run)
+    db.commit()
+    db.refresh(agent_run)
+    return agent_run
+
+
+def get_agent_run(db: Session, run_id: str) -> Optional[models.AgentRun]:
+    return db.query(models.AgentRun).filter(models.AgentRun.run_id == run_id).first()

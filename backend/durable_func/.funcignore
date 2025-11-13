@@ -1,0 +1,8 @@
+.env
+__pycache__
+_*
+*.ipynb
+
+.vscode
+.env
+local.settings.json

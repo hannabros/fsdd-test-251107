@@ -1,0 +1,14 @@
+azure-functions
+azure-functions-durable
+
+# OpenAI and Azure AI SDKs
+openai
+azure-identity
+azure-ai-agents
+azure-ai-projects
+
+# Agent Framework SDK
+agent-framework
+
+# Azure Search SDK
+azure-search-documents==11.5.3

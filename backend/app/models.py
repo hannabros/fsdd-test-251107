@@ -22,6 +22,12 @@ class Project(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    agent_runs = relationship(
+        "AgentRun",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
 
 class SourceFile(Base):
@@ -35,3 +41,17 @@ class SourceFile(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project", back_populates="files")
+
+
+class AgentRun(Base):
+    __tablename__ = "agent_runs"
+
+    run_id = Column(String, primary_key=True)
+    project_id = Column(String, ForeignKey("projects.project_id", ondelete="SET NULL"), nullable=True)
+    query = Column(Text, nullable=False)
+    report_length = Column(String, nullable=False, default="medium")
+    status_url = Column(Text, nullable=False)
+    send_event_url = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("Project", back_populates="agent_runs")

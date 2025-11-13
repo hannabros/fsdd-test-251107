@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     azure_openai_api_version: str = "2024-05-01-preview"
     azure_openai_embedding_deployment: Optional[str] = None
     azure_openai_embedding_dimensions: int = 1536
+    durable_functions_base_url: str = "http://localhost:7071"
+    durable_functions_human_event: str = "HumanApproval"
     database_url: Optional[str] = None
     storage_dir: Optional[str] = None
 

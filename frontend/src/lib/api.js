@@ -66,4 +66,25 @@ export const api = {
     });
   },
   deleteFile: (fileId) => request(`/files/${fileId}`, { method: "DELETE" }),
+  startAgentRun: (payload) =>
+    request("/agent-runs", {
+      method: "POST",
+      body: JSON.stringify(payload ?? {}),
+    }),
+  getAgentRunStatus: async (runId) => {
+    const response = await fetch(`${API_BASE_URL}/agent-runs/${runId}`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    const body = await parseResponse(response);
+    if (response.status === 200 || response.status === 202) {
+      return { status: response.status, body };
+    }
+    const detail = typeof body === "string" ? body : body?.detail;
+    throw new Error(detail || `Status request failed with ${response.status}`);
+  },
+  sendAgentFeedback: (runId, action) =>
+    request(`/agent-runs/${runId}/human-feedback`, {
+      method: "POST",
+      body: JSON.stringify({ action }),
+    }),
 };

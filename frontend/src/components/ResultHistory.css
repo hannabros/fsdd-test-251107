@@ -1,0 +1,147 @@
+.history-panel {
+  background: #ffffff;
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.history-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.history-empty {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.history-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-item.focused {
+  border-color: #2563eb;
+  background: #eef2ff;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.history-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.history-remove-button {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.history-status {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #475569;
+}
+
+.history-status[data-status="Completed"] {
+  color: #0f766e;
+}
+
+.history-status[data-status="Failed"] {
+  color: #dc2626;
+}
+
+.history-timestamp {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.history-query {
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.history-status-block {
+  background: #fff;
+  border-radius: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e2e8f0;
+}
+
+.history-status-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.history-status-message {
+  color: #475569;
+}
+
+.history-progress-bar {
+  margin-top: 0.45rem;
+  background: #e2e8f0;
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.history-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #2563eb, #4338ca);
+}
+
+.history-status-empty {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.history-output {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.history-output-button {
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #1e293b;
+  color: #fff;
+}
